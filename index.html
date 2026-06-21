@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FuelNavigator | Карта АЗС Майкоп</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="navbar">
+        <a href="#" id="brand-logo" class="logo-link">
+            <div class="logo">FuelNavigator</div>
+        </a>
+        <nav class="nav-links" id="main-nav-links">
+            <a href="#" id="shop-btn">Магазин (VIP)</a>
+            <a href="#" id="history-btn">История</a>
+            <a href="#" id="profile-btn">Профиль</a>
+        </nav>
+    </header>
+
+    <main class="main-container app-screen" id="screen-main">
+        <aside class="sidebar">
+            <div class="search-box">
+                <h2>Поиск адреса</h2>
+                <div class="search-form">
+                    <input type="text" id="search-input" placeholder="Например: Краснооктябрьская">
+                    <button id="search-btn">Найти</button>
+                </div>
+            </div>
+
+            <div id="history-box" class="history-container" style="display: none;">
+                <h3>История поиска</h3>
+                <ul id="history-list"></ul>
+                <button id="clear-history-btn">Очистить историю</button>
+            </div>
+
+            <div class="filter-box">
+                <h3>Фильтровать АЗС</h3>
+                <div class="filter-group">
+                    <label for="filter-rating-select">Рейтинг</label>
+                    <select id="filter-rating-select" class="styled-select">
+                        <option value="default">Без сортировки</option>
+                        <option value="desc">От лучшего к худшему (★ 5 → 1)</option>
+                        <option value="asc">От худшего к лучшему (★ 1 → 5)</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filter-price-select">Цена топлива</label>
+                    <select id="filter-price-select" class="styled-select">
+                        <option value="default">Без сортировки</option>
+                        <option value="asc">Сначала дешевые (VIP)</option>
+                    </select>
+                </div>
+            </div>
+
+            <h2>Доступные АЗС в Майкопе</h2>
+            <div id="station-list">
+                </div>
+        </aside>
+        
+        <section id="map"></section>
+    </main>
+
+    <main class="main-container app-screen" id="screen-support" style="display: none;">
+        <div class="info-page-container">
+            <div class="info-card">
+                <h2>Служба поддержки пользователей</h2>
+                <p class="subtitle-text">Есть вопросы, предложения или нашли неточность? Мы всегда на связи!</p>
+                
+                <div class="support-topics">
+                    <div class="topic-item">📢 <span>Размещение рекламы и коммерческое сотрудничество</span></div>
+                    <div class="topic-item">💡 <span>Развитие сервиса и ваши крутые идеи</span></div>
+                    <div class="topic-item">🐛 <span>Технические сбои и заявления об ошибках</span></div>
+                </div>
+
+                <div class="contacts-block">
+                    <h3>Прямые каналы связи:</h3>
+                    <a href="mailto:seyrin25@gmail.com" class="contact-link email-link">✉️ seyrin25@gmail.com</a>
+                    <a href="https://t.me/SeyRins" target="_blank" class="contact-link tg-link">✈️ t.me/SeyRins</a>
+                </div>
+                
+                <button class="btn-submit back-to-map-btn">« Вернуться к карте</button>
+            </div>
+        </div>
+    </main>
+
+    <main class="main-container app-screen" id="screen-help" style="display: none;">
+        <div class="info-page-container">
+            <div class="help-layout">
+                <aside class="help-menu">
+                    <h3>Разделы справки</h3>
+                    <ul class="help-menu-list">
+                        <li class="active-help-tab" data-target="help-about">О проекте FuelNavigator</li>
+                        <li data-target="help-vip">Преимущества VIP-статуса</li>
+                        <li data-target="help-data">Обновление базы данных</li>
+                    </ul>
+                </aside>
+                
+                <section class="help-content-box">
+                    <div id="help-about" class="help-tab-content">
+                        <h2>О проекте FuelNavigator</h2>
+                        <p><strong>FuelNavigator</strong> — это интерактивная картографическая система, разработанная для удобного мониторинга стоимости топлива и поиска оптимальных маршрутов к АЗС в городе Майкоп. Наш сервис позволяет сравнивать цены, оценивать рейтинги станций и сохранять персональную историю поездок.</p>
+                        <p>Интерфейс спроектирован с использованием передовых веб-технологий на базе динамических компонентов и локальных кэш-баз для мгновенного отклика без задержек.</p>
+                    </div>
+
+                    <div id="help-vip" class="help-tab-content" style="display: none;">
+                        <h2>Преимущества VIP-статуса</h2>
+                        <p>VIP-аккаунт переводит приложение в профессиональный режим эксплуатации:</p>
+                        <ul>
+                            <li><strong>Полная прозрачность:</strong> Разблокировка отображения детализированных цен на АИ-95, АИ-92 и Дитпливо.</li>
+                            <li><strong>Умная логистика:</strong> Активация ценовых фильтров-сортировщиков в левой панели приложения.</li>
+                            <li><strong>Абсолютный комфорт:</strong> Стопроцентное блокирование любых всплывающих коммерческих рекламных баннеров.</li>
+                        </ul>
+                    </div>
+
+                    <div id="help-data" class="help-tab-content" style="display: none;">
+                        <h2>Обновление базы данных</h2>
+                        <p>Все изменения цен, добавление новых сетевых заправок и очистка кэш-данных производятся в реальном времени. Хранение индивидуальных сессий и списков поиска привязано к механизмам шифрования в пределах вашего локального веб-обозревателя.</p>
+                    </div>
+
+                    <div class="warning-disclaimer">
+                        ⚠️ Сайт используется исключительно как макет, не имеет достоверной информации, может содержать неточности, требует дальнейших исправлений и доработок.
+                    </div>
+                    
+                    <button class="btn-submit back-to-map-btn" style="margin-top: 20px;">« Вернуться к карте</button>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 FuelNavigator. <a href="#" id="footer-support-btn">Поддержка</a> | <a href="#" id="footer-help-btn">Справка</a></p>
+    </footer>
+
+    <div id="auth-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal" id="close-auth">&times;</span>
+            <h2>Регистрация</h2>
+            <form class="auth-form" id="register-form">
+                <input type="text" id="reg-name" placeholder="Ваше имя" required>
+                <input type="email" placeholder="Ваш e-mail" required>
+                <input type="password" placeholder="Пароль" required>
+                <button type="submit" class="btn-submit">Зарегистрироваться</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="profile-modal" class="modal-overlay">
+        <div class="modal-content text-center">
+            <span class="close-modal" id="close-profile">&times;</span>
+            <h2>Личный кабинет</h2>
+            <div class="profile-avatar">👤</div>
+            <h3 id="profile-user-name">Пользователь</h3>
+            <p style="color: #666;">Статус аккаунта: <span id="profile-status-text" style="font-weight:bold;">Обычный</span></p>
+            <button id="logout-btn" class="btn-submit" style="background:#e53935; margin-top: 15px;">Выйти из аккаунта</button>
+        </div>
+    </div>
+
+    <div id="shop-modal" class="modal-overlay">
+        <div class="modal-content shop-content">
+            <span class="close-modal" id="close-shop">&times;</span>
+            <h2>Магазин привилегий</h2>
+            <div class="vip-card-box">
+                <h3>Статус VIP-Пользователь</h3>
+                <p class="vip-desc">Открывает доступ к ценам на все виды топлива (АИ-95, АИ-92, ДТ) на карте Майкопа, активирует умные фильтры и полностью отключает всплывающую рекламу.</p>
+                <div class="vip-price">0 ₽ <span class="old-price">499 ₽</span></div>
+                <button id="buy-vip-btn" class="btn-submit vip-buy">Активировать бесплатно</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="ad-modal" class="modal-overlay">
+        <div class="modal-content ad-content">
+            <span class="close-modal" id="close-ad">&times;</span>
+            <div class="ad-badge">Реклама</div>
+            <h2>Здесь могла быть ваша реклама!</h2>
+            <p class="ad-subtext">Для уточнения информации обратитесь в поддержку.</p>
+            <button id="ad-close-btn" class="btn-submit" style="background: #333; margin-top: 20px;">Продолжить работу</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
