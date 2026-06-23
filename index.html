@@ -2,40 +2,54 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FuelNavigator | Карта АЗС Майкоп</title>
+    <!-- Базовые стили Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+    <!-- Шапка сайта -->
     <header class="navbar">
         <a href="#" id="brand-logo" class="logo-link">
             <div class="logo">FuelNavigator</div>
         </a>
-        <nav class="nav-links" id="main-nav-links">
-            <a href="#" id="shop-btn">Магазин (VIP)</a>
-            <a href="#" id="history-btn">История</a>
-            <a href="#" id="profile-btn">Профиль</a>
+        <nav class="nav-links">
+            <a href="#" id="shop-btn" class="nav-item-btn">Магазин (VIP)</a>
+            <!-- История изначально скрыта, появляется только после авторизации -->
+            <a href="#" id="history-btn" class="nav-item-btn" style="display: none;">История</a>
+            <!-- Текст кнопки меняется JS (Войти / Профиль) -->
+            <a href="#" id="profile-btn" class="nav-item-btn">Войти</a>
         </nav>
     </header>
 
+    <!-- Главный экран -->
     <main class="main-container app-screen" id="screen-main">
-        <aside class="sidebar">
+        <!-- Кнопка управления сайдбаром -->
+        <button id="toggle-sidebar-btn" class="map-burger-control">☰ Меню АЗС</button>
+
+        <!-- Выдвижная панель (TG-style: слева) -->
+        <aside class="sidebar-drawer" id="app-sidebar">
+            <div class="drawer-header">
+                <h3>Навигационная панель</h3>
+            </div>
+
             <div class="search-box">
-                <h2>Поиск адреса</h2>
+                <h2>Поиск АЗС</h2>
                 <div class="search-form">
-                    <input type="text" id="search-input" placeholder="Например: Краснооктябрьская">
-                    <button id="search-btn">Найти</button>
+                    <input type="text" id="search-input" placeholder="Введите название или улицу АЗС...">
                 </div>
             </div>
 
+            <!-- Блок истории просмотренных АЗС -->
             <div id="history-box" class="history-container" style="display: none;">
-                <h3>История поиска</h3>
+                <h3>История просмотров</h3>
                 <ul id="history-list"></ul>
                 <button id="clear-history-btn">Очистить историю</button>
             </div>
 
+            <!-- Блок фильтрации -->
             <div class="filter-box">
                 <h3>Фильтровать АЗС</h3>
                 <div class="filter-group">
@@ -55,14 +69,17 @@
                 </div>
             </div>
 
-            <h2>Доступные АЗС в Майкопе</h2>
+            <h2>Список АЗС в Майкопе</h2>
             <div id="station-list">
-                </div>
+                <!-- Рендерится динамически из JS -->
+            </div>
         </aside>
         
+        <!-- Контейнер интерактивной карты -->
         <section id="map"></section>
     </main>
 
+    <!-- ЭКРАН 2: Страница Поддержки -->
     <main class="main-container app-screen" id="screen-support" style="display: none;">
         <div class="info-page-container">
             <div class="info-card">
@@ -70,9 +87,9 @@
                 <p class="subtitle-text">Есть вопросы, предложения или нашли неточность? Мы всегда на связи!</p>
                 
                 <div class="support-topics">
-                    <div class="topic-item">📢 <span>Размещение рекламы и коммерческое сотрудничество</span></div>
-                    <div class="topic-item">💡 <span>Развитие сервиса и ваши крутые идеи</span></div>
-                    <div class="topic-item">🐛 <span>Технические сбои и заявления об ошибках</span></div>
+                    <div class="topic-item">📢 <span>Узнать информацию о рекламе и коммерческом сотрудничестве</span></div>
+                    <div class="topic-item">💡 <span>Предложить новые идеи по развитию приложения</span></div>
+                    <div class="topic-item">🐛 <span>Заявить об ошибке или сбое в гео-метках</span></div>
                 </div>
 
                 <div class="contacts-block">
@@ -86,6 +103,7 @@
         </div>
     </main>
 
+    <!-- ЭКРАН 3: Страница Справки -->
     <main class="main-container app-screen" id="screen-help" style="display: none;">
         <div class="info-page-container">
             <div class="help-layout">
@@ -93,35 +111,34 @@
                     <h3>Разделы справки</h3>
                     <ul class="help-menu-list">
                         <li class="active-help-tab" data-target="help-about">О проекте FuelNavigator</li>
-                        <li data-target="help-vip">Преимущества VIP-статуса</li>
-                        <li data-target="help-data">Обновление базы данных</li>
+                        <li class="data-target" data-target="help-vip">Преимущества VIP-статуса</li>
+                        <li class="data-target" data-target="help-data">Обновление базы данных</li>
                     </ul>
                 </aside>
                 
                 <section class="help-content-box">
                     <div id="help-about" class="help-tab-content">
                         <h2>О проекте FuelNavigator</h2>
-                        <p><strong>FuelNavigator</strong> — это интерактивная картографическая система, разработанная для удобного мониторинга стоимости топлива и поиска оптимальных маршрутов к АЗС в городе Майкоп. Наш сервис позволяет сравнивать цены, оценивать рейтинги станций и сохранять персональную историю поездок.</p>
-                        <p>Интерфейс спроектирован с использованием передовых веб-технологий на базе динамических компонентов и локальных кэш-баз для мгновенного отклика без задержек.</p>
+                        <p><strong>FuelNavigator</strong> — это интерактивная картографическая система, разработанная для удобного мониторинга стоимости топлива и поиска оптимальных маршрутов к АЗС в городе Майкоп. Наш сервис позволяет сравнивать цены, оценивать рейтинги станций и строить персональные маршруты.</p>
                     </div>
 
                     <div id="help-vip" class="help-tab-content" style="display: none;">
                         <h2>Преимущества VIP-статуса</h2>
                         <p>VIP-аккаунт переводит приложение в профессиональный режим эксплуатации:</p>
                         <ul>
-                            <li><strong>Полная прозрачность:</strong> Разблокировка отображения детализированных цен на АИ-95, АИ-92 и Дитпливо.</li>
-                            <li><strong>Умная логистика:</strong> Активация ценовых фильтров-сортировщиков в левой панели приложения.</li>
+                            <li><strong>Полная прозрачность:</strong> Разблокировка отображения детализированных цен на АИ-95, АИ-92 и ДТ.</li>
+                            <li><strong>Умная логистика:</strong> Активация ценовых фильтров-сортировщиков.</li>
                             <li><strong>Абсолютный комфорт:</strong> Стопроцентное блокирование любых всплывающих коммерческих рекламных баннеров.</li>
                         </ul>
                     </div>
 
                     <div id="help-data" class="help-tab-content" style="display: none;">
                         <h2>Обновление базы данных</h2>
-                        <p>Все изменения цен, добавление новых сетевых заправок и очистка кэш-данных производятся в реальном времени. Хранение индивидуальных сессий и списков поиска привязано к механизмам шифрования в пределах вашего локального веб-обозревателя.</p>
+                        <p>Все изменения цен, добавление новых сетевых заправок и очистка кэш-данных производятся в реальном времени. Хранение индивидуальных сессий и списков поиска привязано к механизмам кэширования в пределах вашего локального веб-обозревателя.</p>
                     </div>
 
                     <div class="warning-disclaimer">
-                        ⚠️ Сайт используется исключительно как макет, не имеет достоверной информации, может содержать неточности, требует дальнейших исправлений и доработок.
+                        ⚠️ Сайт используется исключительно как макет, не имеет достоверной информации, может содержать неточности и ошибки, требует дальнейших исправлений и доработок.
                     </div>
                     
                     <button class="btn-submit back-to-map-btn" style="margin-top: 20px;">« Вернуться к карте</button>
@@ -130,23 +147,45 @@
         </div>
     </main>
 
+    <!-- Подвал сайта -->
     <footer>
         <p>&copy; 2026 FuelNavigator. <a href="#" id="footer-support-btn">Поддержка</a> | <a href="#" id="footer-help-btn">Справка</a></p>
     </footer>
 
+    <!-- МОДАЛЬНОЕ ОКНО 1: Вход в аккаунт -->
+    <div id="login-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal" id="close-login">&times;</span>
+            <h2>Авторизация</h2>
+            <form class="auth-form" id="login-form">
+                <input type="email" id="login-email" placeholder="Ваш e-mail" required>
+                <input type="password" id="login-password" placeholder="Пароль" required>
+                <button type="submit" class="btn-submit">Войти</button>
+            </form>
+            <div class="toggle-auth-view">
+                <p>Нет аккаунта? <span id="go-to-register">Зарегистрироваться.</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО 2: Регистрация -->
     <div id="auth-modal" class="modal-overlay">
         <div class="modal-content">
             <span class="close-modal" id="close-auth">&times;</span>
             <h2>Регистрация</h2>
             <form class="auth-form" id="register-form">
                 <input type="text" id="reg-name" placeholder="Ваше имя" required>
-                <input type="email" placeholder="Ваш e-mail" required>
-                <input type="password" placeholder="Пароль" required>
+                <input type="email" id="reg-email" placeholder="Ваш e-mail" required>
+                <input type="password" id="reg-password" placeholder="Пароль (6-12 символов)" minlength="6" maxlength="12" required>
                 <button type="submit" class="btn-submit">Зарегистрироваться</button>
             </form>
+            <div class="toggle-auth-view">
+                <p>Уже есть аккаунт? <span id="go-to-login">Войти.</span></p>
+            </div>
         </div>
     </div>
 
+    <!-- МОДАЛЬНОЕ ОКНО 3: Личный кабинет (Профиль) -->
     <div id="profile-modal" class="modal-overlay">
         <div class="modal-content text-center">
             <span class="close-modal" id="close-profile">&times;</span>
@@ -158,6 +197,7 @@
         </div>
     </div>
 
+    <!-- МАГАЗИН ПРИВИЛЕГИЙ -->
     <div id="shop-modal" class="modal-overlay">
         <div class="modal-content shop-content">
             <span class="close-modal" id="close-shop">&times;</span>
@@ -171,13 +211,20 @@
         </div>
     </div>
 
-    <div id="ad-modal" class="modal-overlay">
-        <div class="modal-content ad-content">
-            <span class="close-modal" id="close-ad">&times;</span>
-            <div class="ad-badge">Реклама</div>
-            <h2>Здесь могла быть ваша реклама!</h2>
-            <p class="ad-subtext">Для уточнения информации обратитесь в поддержку.</p>
-            <button id="ad-close-btn" class="btn-submit" style="background: #333; margin-top: 20px;">Продолжить работу</button>
+    <!-- ОКНО РЕКЛАМЫ (PREMIUM STYLE) -->
+    <div id="ad-modal" class="modal-overlay ad-blur-overlay">
+        <div class="premium-ad-card">
+            <div class="premium-ad-header">
+                <span class="premium-ad-badge">Реклама</span>
+                <span class="close-modal-alt" id="close-ad" style="display: none;">&times;</span>
+            </div>
+            <div class="premium-ad-body">
+                <h2>Здесь могла быть ваша реклама!</h2>
+                <p>Для уточнения информации обратитесь в поддержку.</p>
+            </div>
+            <div class="premium-ad-footer">
+                <button id="ad-close-btn" class="premium-ad-btn disabled-ad-btn" disabled>Скрыть через 3 сек...</button>
+            </div>
         </div>
     </div>
 
