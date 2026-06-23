@@ -3,7 +3,7 @@ let isUserVip = false;
 let isUserAuthorized = false;
 let authorizedName = "";
 let map = null; 
-let routingLine = null; 
+let routingLine = null; // Переменная теперь хранит полноценный контроллер маршрутизации Leaflet Routing Machine
 
 // Управление рекламой
 let stationsViewedCount = 0; 
@@ -40,7 +40,6 @@ window.onload = function() {
     let vh = window.innerHeight * 0.01;
     document.documentElement.style.setProperty('--vh', `${vh}px`);
 
-    // Центрируем карту Майкопа с оптимальным зумом, чтобы видеть все новые точки
     map = L.map('map', { zoomControl: true }).setView([44.615, 40.085], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
 
@@ -164,11 +163,65 @@ function handleStationTracking(stationObj) {
     if (stationsViewedCount % 2 === 0 && timeSinceLastAd >= 30) { triggerAd(); }
 }
 
+// ПОЛНОЦЕННОЕ УМНОЕ ПОСТРОЕНИЕ МАРШРУТА ПО УЛИЦАМ МАЙКОПА ЧЕРЕЗ СЕРВЕР OSRM
 function buildRouteToStation(destLat, destLon) {
     if (!userLocationCoords) return;
-    if (routingLine) map.removeLayer(routingLine);
-    routingLine = L.polyline([userLocationCoords, [destLat, destLon]], { color: '#0284c7', weight: 5, opacity: 0.7, dashArray: '10, 10' }).addTo(map);
-    map.fitBounds(routingLine.getBounds(), { padding: [50, 50] });
+    
+    // Если на карте уже отображается прошлый построенный маршрут — стираем его перед новым расчетом
+    if (routingLine) {
+        map.removeControl(routingLine);
+    }
+
+    // Инициализируем контроллер построения маршрутов Leaflet Routing Machine
+    routingLine = L.Routing.control({
+        waypoints: [
+            L.latLng(userLocationCoords[0], userLocationCoords[1]), // Точка А (Где я?)
+            L.latLng(destLat, destLon)                              // Точка Б (Выбранная АЗС)
+        ],
+        router: L.Routing.osrmv1({
+            serviceUrl: 'https://router.project-osrm.org/route/v1' // Подключаем бесплатный сервер обработки дорожной сетки
+        }),
+        lineOptions: {
+            styles: [{ color: '#0284c7', opacity: 0.8, weight: 6 }] // Настройки линии дороги на карте
+        },
+        createMarker: function() { return null; }, // Убираем стандартные черные метки плагина, чтобы не портить дизайн
+        addWaypoints: false, // Отключаем возможность кликами добавлять промежуточные точки
+        routeWhileDragging: false,
+        show: false // Скрываем громоздкую боковую текстовую панель с шагами поворотов
+    }).addTo(map);
+
+    // Слушатель события: когда сервер прислал готовые расчеты дорожного трека
+    routingLine.on('routesfound', function(e) {
+        const routes = e.routes;
+        const summary = routes[0].summary; // Забираем общую сводку расчетов
+        
+        // Конвертируем метры в читаемые километры и секунды в минуты
+        const distanceKm = (summary.totalDistance / 1000).toFixed(1);
+        const timeMin = Math.round(summary.totalTime / 60);
+
+        // Находим HTML-блок активного всплывающего балуна (popup) на карте
+        const activePopup = document.querySelector('.leaflet-popup-content');
+        if (activePopup) {
+            // Удаляем старый инфо-блок, если строим маршрут повторно, чтобы избежать дублирования текста
+            const existingInfo = document.querySelector('.route-summary-info');
+            if (existingInfo) existingInfo.remove();
+
+            // Создаем красивый адаптивный плавающий блок с информацией о поездке
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'route-summary-info';
+            infoDiv.style.marginTop = '10px';
+            infoDiv.style.padding = '8px';
+            infoDiv.style.background = '#f1f5f9';
+            infoDiv.style.borderRadius = '4px';
+            infoDiv.style.borderLeft = '4px solid #0284c7';
+            infoDiv.style.fontSize = '12px';
+            infoDiv.style.color = '#334155';
+            infoDiv.innerHTML = `🚗 <b>Расстояние по дорогам:</b> ${distanceKm} км<br>⏱️ <b>Время в пути:</b> ${timeMin} мин`;
+            
+            // Встраиваем данные прямо внутрь балуна над кнопкой
+            activePopup.appendChild(infoDiv);
+        }
+    });
 }
 
 // Функции управления выдвижным TG-меню
@@ -177,7 +230,7 @@ function closeSidebarDrawer() {
     const toggleBtn = document.getElementById('toggle-sidebar-btn');
     sidebar.classList.remove('drawer-open');
     toggleBtn.classList.remove('control-shifted');
-    toggleBtn.innerText = "☰ Меню АЗС";
+    toggleBtn.innerText = "☰ Мения АЗС";
 }
 
 function openSidebarDrawer() {
@@ -283,7 +336,7 @@ function initApplicationEvents() {
         });
     });
 
-    document.getElementById('clear-history-btn').addEventListener('click', () => { if (isUserAuthorized) { historyDatabase[authorizedName.toLowerCase()] = []; localStorage.setItem('fuelMapUserHistories', JSON.stringify(historyDatabase)); updateHistoryUI(); if (routingLine) map.removeLayer(routingLine); renderInterface(stations); } });
+    document.getElementById('clear-history-btn').addEventListener('click', () => { if (isUserAuthorized) { historyDatabase[authorizedName.toLowerCase()] = []; localStorage.setItem('fuelMapUserHistories', JSON.stringify(historyDatabase)); updateHistoryUI(); if (routingLine) map.removeControl(routingLine); renderInterface(stations); } });
 
     const profileBtn = document.getElementById('profile-btn');
     const shopBtn = document.getElementById('shop-btn');
@@ -382,7 +435,7 @@ function initApplicationEvents() {
         document.getElementById('history-box').style.display = 'none'; 
         
         ratingSelect.value = 'default'; priceSelect.value = 'default'; 
-        if (routingLine) map.removeLayer(routingLine); 
+        if (routingLine) map.removeControl(routingLine); 
         renderInterface(stations); 
         alert("Вы успешно вышли из системы.");
     });
