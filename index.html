@@ -4,32 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FuelNavigator | Карта АЗС Майкоп</title>
-    <!-- Базовые стили Leaflet -->
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Шапка сайта -->
     <header class="navbar">
         <a href="#" id="brand-logo" class="logo-link">
             <div class="logo">FuelNavigator</div>
         </a>
         <nav class="nav-links">
             <a href="#" id="shop-btn" class="nav-item-btn">Магазин (VIP)</a>
-            <!-- История изначально скрыта, появляется только после авторизации -->
             <a href="#" id="history-btn" class="nav-item-btn" style="display: none;">История</a>
-            <!-- Текст кнопки меняется JS (Войти / Профиль) -->
             <a href="#" id="profile-btn" class="nav-item-btn">Войти</a>
         </nav>
     </header>
 
-    <!-- Главный экран -->
     <main class="main-container app-screen" id="screen-main">
-        <!-- Кнопка управления сайдбаром -->
         <button id="toggle-sidebar-btn" class="map-burger-control">☰ Меню АЗС</button>
 
-        <!-- Выдвижная панель (TG-style: слева) -->
         <aside class="sidebar-drawer" id="app-sidebar">
             <div class="drawer-header">
                 <h3>Навигационная панель</h3>
@@ -42,14 +37,12 @@
                 </div>
             </div>
 
-            <!-- Блок истории просмотренных АЗС -->
             <div id="history-box" class="history-container" style="display: none;">
                 <h3>История просмотров</h3>
                 <ul id="history-list"></ul>
                 <button id="clear-history-btn">Очистить историю</button>
             </div>
 
-            <!-- Блок фильтрации -->
             <div class="filter-box">
                 <h3>Фильтровать АЗС</h3>
                 <div class="filter-group">
@@ -69,17 +62,13 @@
                 </div>
             </div>
 
-            <h2>Список АЗС в Майкопе</h2>
-            <div id="station-list">
-                <!-- Рендерится динамически из JS -->
-            </div>
+            <h2>Список станций в Майкопе</h2>
+            <div id="station-list"></div>
         </aside>
         
-        <!-- Контейнер интерактивной карты -->
         <section id="map"></section>
     </main>
 
-    <!-- ЭКРАН 2: Страница Поддержки -->
     <main class="main-container app-screen" id="screen-support" style="display: none;">
         <div class="info-page-container">
             <div class="info-card">
@@ -103,7 +92,6 @@
         </div>
     </main>
 
-    <!-- ЭКРАН 3: Страница Справки -->
     <main class="main-container app-screen" id="screen-help" style="display: none;">
         <div class="info-page-container">
             <div class="help-layout">
@@ -147,12 +135,10 @@
         </div>
     </main>
 
-    <!-- Подвал сайта -->
     <footer>
         <p>&copy; 2026 FuelNavigator. <a href="#" id="footer-support-btn">Поддержка</a> | <a href="#" id="footer-help-btn">Справка</a></p>
     </footer>
 
-    <!-- МОДАЛЬНОЕ ОКНО 1: Вход в аккаунт -->
     <div id="login-modal" class="modal-overlay">
         <div class="modal-content">
             <span class="close-modal" id="close-login">&times;</span>
@@ -168,7 +154,6 @@
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО 2: Регистрация -->
     <div id="auth-modal" class="modal-overlay">
         <div class="modal-content">
             <span class="close-modal" id="close-auth">&times;</span>
@@ -185,7 +170,6 @@
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО 3: Личный кабинет (Профиль) -->
     <div id="profile-modal" class="modal-overlay">
         <div class="modal-content text-center">
             <span class="close-modal" id="close-profile">&times;</span>
@@ -197,7 +181,6 @@
         </div>
     </div>
 
-    <!-- МАГАЗИН ПРИВИЛЕГИЙ -->
     <div id="shop-modal" class="modal-overlay">
         <div class="modal-content shop-content">
             <span class="close-modal" id="close-shop">&times;</span>
@@ -211,7 +194,6 @@
         </div>
     </div>
 
-    <!-- ОКНО РЕКЛАМЫ (PREMIUM STYLE) -->
     <div id="ad-modal" class="modal-overlay ad-blur-overlay">
         <div class="premium-ad-card">
             <div class="premium-ad-header">
@@ -229,6 +211,10 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
     <script src="script.js"></script>
 </body>
 </html>
