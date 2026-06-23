@@ -15,14 +15,14 @@ let vipUsersDatabase = JSON.parse(localStorage.getItem('fuelMapVipUsers')) || {}
 let historyDatabase = JSON.parse(localStorage.getItem('fuelMapUserHistories')) || {}; 
 let registeredAccounts = JSON.parse(localStorage.getItem('fuelMapAccounts')) || {}; // База данных аккаунтов
 
-// Реальная гео-база заправок Майкопа
+// ТОЧНАЯ ОБНОВЛЕННАЯ ГЕО-БАЗА СТАНЦИЙ МАЙКОПА (Данные из Яндекс/Google Карт)
 const stations = [
-    { id: 1, name: "Лукойл (ул. Хакурате, 194)", lat: 44.611132, lon: 40.089423, rating: 4.8, prices: { ai95: "56.40", ai92: "51.20", dt: "60.10" } },
-    { id: 2, name: "Роснефть (ул. Привокзальная, 290)", lat: 44.598211, lon: 40.114512, rating: 4.5, prices: { ai95: "55.90", ai92: "50.80", dt: "59.50" } },
-    { id: 3, name: "Газпром (ул. Димитрова, 37)", lat: 44.619511, lon: 40.082231, rating: 4.9, prices: { ai95: "56.10", ai92: "51.00", dt: "59.90" } },
-    { id: 4, name: "Eco Premium (ул. Пионерская, 283А)", lat: 44.601112, lon: 40.128412, rating: 4.2, prices: { ai95: "54.80", ai92: "49.90", dt: "58.20" } },
-    { id: 5, name: "Метрополис (ул. Хакурате, 644/1)", lat: 44.612512, lon: 40.063211, rating: 4.0, prices: { ai95: "53.90", ai92: "48.50", dt: "57.00" } },
-    { id: 6, name: "Лукойл (ул. Хакурате, 651)", lat: 44.613312, lon: 40.081123, rating: 4.7, prices: { ai95: "56.30", ai92: "51.10", dt: "60.05" } }
+    { id: 1, name: "Лукойл (ул. Хакурате, 194)", lat: 44.616857, lon: 40.115733, rating: 4.8, prices: { ai95: "56.40", ai92: "51.20", dt: "60.10" } },
+    { id: 2, name: "Роснефть (ул. Привокзальная, 290)", lat: 44.625034, lon: 40.072727, rating: 4.5, prices: { ai95: "55.90", ai92: "50.80", dt: "59.50" } },
+    { id: 3, name: "Газпром (ул. Димитрова, 37)", lat: 44.624131, lon: 40.052046, rating: 4.9, prices: { ai95: "56.10", ai92: "51.00", dt: "59.90" } },
+    { id: 4, name: "Eco Premium (ул. Пионерская)", lat: 44.609716, lon: 40.083383, rating: 4.2, prices: { ai95: "54.80", ai92: "49.90", dt: "58.20" } },
+    { id: 5, name: "Метрополис (ул. Хакурате, 644)", lat: 44.624029, lon: 40.057953, rating: 4.0, prices: { ai95: "53.90", ai92: "48.50", dt: "57.00" } },
+    { id: 6, name: "Лукойл (ул. Хакурате, 651)", lat: 44.624334, lon: 40.055473, rating: 4.7, prices: { ai95: "56.30", ai92: "51.10", dt: "60.05" } }
 ];
 
 let mapMarkers = [];
@@ -40,7 +40,8 @@ window.onload = function() {
     let vh = window.innerHeight * 0.01;
     document.documentElement.style.setProperty('--vh', `${vh}px`);
 
-    map = L.map('map', { zoomControl: true }).setView([44.606621, 40.101732], 14);
+    // Центрируем карту Майкопа с оптимальным зумом, чтобы видеть все новые точки
+    map = L.map('map', { zoomControl: true }).setView([44.615, 40.085], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
 
     setTimeout(() => { map.invalidateSize(); }, 400);
@@ -90,7 +91,7 @@ function checkSavedUserSession() {
 
 function focusOnUser() {
     L.marker(userLocationCoords, { icon: createCustomIcon('#10b981') }).addTo(map).bindPopup("<b>Вы находитесь здесь!</b>").openPopup();
-    map.setView(userLocationCoords, 16);
+    map.setView(userLocationCoords, 14);
     renderInterface(stations); 
 }
 
@@ -139,7 +140,7 @@ function renderInterface(stationsArray) {
         
         div.addEventListener('click', () => {
             closeSidebarDrawer();
-            map.setView([s.lat, s.lon], 16); 
+            map.setView([s.lat, s.lon], 15); 
             marker.openPopup();
             handleStationTracking(s);
         });
@@ -170,6 +171,7 @@ function buildRouteToStation(destLat, destLon) {
     map.fitBounds(routingLine.getBounds(), { padding: [50, 50] });
 }
 
+// Функции управления выдвижным TG-меню
 function closeSidebarDrawer() {
     const sidebar = document.getElementById('app-sidebar');
     const toggleBtn = document.getElementById('toggle-sidebar-btn');
@@ -204,7 +206,7 @@ function updateHistoryUI() {
         if (foundStation) {
             const li = document.createElement('li'); li.innerText = foundStation.name;
             li.addEventListener('click', () => {
-                closeSidebarDrawer(); map.setView([foundStation.lat, foundStation.lon], 16);
+                closeSidebarDrawer(); map.setView([foundStation.lat, foundStation.lon], 15);
                 mapMarkers.forEach(m => { if (m.getLatLng().lat === foundStation.lat && m.getLatLng().lng === foundStation.lon) m.openPopup(); });
             });
             historyList.appendChild(li);
@@ -306,7 +308,7 @@ function initApplicationEvents() {
         document.getElementById('login-modal').style.display = 'flex';
     });
 
-    // АВТОРИЗАЦИЯ
+    // Авторизация
     document.getElementById('login-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const email = document.getElementById('login-email').value.trim().toLowerCase();
@@ -333,7 +335,7 @@ function initApplicationEvents() {
         alert(`🔓 Авторизация успешна! С возвращением, ${authorizedName}.`);
     });
 
-    // РЕГИСТРАЦИЯ С ФИКСИРОВАННОЙ ЗАЩИТОЙ ДУБЛИКАТОВ ИМЕН И VIP-СТАТУСОВ
+    // Регистрация аккаунтов с проверкой на дубликаты имен и почт
     document.getElementById('register-form').addEventListener('submit', (e) => { 
         e.preventDefault(); 
         const name = document.getElementById('reg-name').value.trim();
@@ -344,12 +346,8 @@ function initApplicationEvents() {
         if (password.length < 6 || password.length > 12) { alert("❌ Ошибка: Пароль должен содержать от 6 до 12 символов!"); return; }
         if (registeredAccounts[email]) { alert(`❌ Ошибка: Пользователь с адресом ${email} уже зарегистрирован!`); return; }
 
-        // ИНЖЕНЕРНЫЙ ФИКС: Проверка уникальности имени (никнейма) по всей базе данных
         const isNameTaken = Object.values(registeredAccounts).some(account => account.name.toLowerCase() === name.toLowerCase());
-        if (isNameTaken) {
-            alert(`❌ Ошибка: Никнейм "${name}" уже занят другим пользователем! Выберите другое имя.`);
-            return;
-        }
+        if (isNameTaken) { alert(`❌ Ошибка: Никнейм "${name}" уже занят другим пользователем!`); return; }
 
         registeredAccounts[email] = { name: name, password: password };
         localStorage.setItem('fuelMapAccounts', JSON.stringify(registeredAccounts));
@@ -371,7 +369,7 @@ function initApplicationEvents() {
         alert(`🎉 Регистрация успешна! Добро пожаловать, ${authorizedName}.`);
     });
     
-    // РУЧНОЙ ВЫХОД
+    // Выход
     document.getElementById('logout-btn').addEventListener('click', () => { 
         isUserAuthorized = false; authorizedName = ""; isUserVip = false; userLocationCoords = null; 
         localStorage.removeItem('fuelMapCurrentSession');
