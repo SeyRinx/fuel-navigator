@@ -2,49 +2,69 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <!-- Настройка масштабирования интерфейса для мобильных экранов (Android/iOS) -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FuelNavigator | Карта АЗС Майкоп</title>
+    <title>FuelHavigator | Карта АЗС Майкоп</title>
     
+    <!-- Системные базовые стили Leaflet API для отрисовки гео-сетки онлайн-карты -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
+    <!-- Файл кастомных CSS-стилей, адаптивности и анимаций приложения -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+    <!-- Шапка сайта (Навигационная панель верхнего уровня) -->
     <header class="navbar">
+        <!-- Логотип бренда (перезагружает страницу при клике для сброса сессий) -->
         <a href="#" id="brand-logo" class="logo-link">
-            <div class="logo">FuelNavigator</div>
+            <div class="logo">FuelHavigator</div>
         </a>
+        <!-- Контейнер управляющих кнопок в шапке -->
         <nav class="nav-links">
+            <!-- Кнопка вызова окна магазина -->
             <a href="#" id="shop-btn" class="nav-item-btn">Магазин (VIP)</a>
+            <!-- Кнопка вызова истории просмотров (скрыта до авторизации) -->
             <a href="#" id="history-btn" class="nav-item-btn" style="display: none;">История</a>
+            <!-- Динамическая кнопка авторизации (Войти / Профиль) -->
             <a href="#" id="profile-btn" class="nav-item-btn">Войти</a>
         </nav>
     </header>
 
+    <!-- ЭКРАН 1: Главный сервисный рабочий экран приложения -->
     <main class="main-container app-screen" id="screen-main">
+        <!-- Плавающая кнопка вызова левого меню, размещенная прямо на карте -->
         <button id="toggle-sidebar-btn" class="map-burger-control">☰ Меню АЗС</button>
 
+        <!-- Левая выдвижная панель управления (сайдбар TG-style) -->
         <aside class="sidebar-drawer" id="app-sidebar">
+            <!-- Шапка выдвижной панели -->
             <div class="drawer-header">
                 <h3>Навигационная панель</h3>
             </div>
 
+            <!-- Блок интерактивного живого поиска АЗС -->
             <div class="search-box">
                 <h2>Поиск АЗС</h2>
                 <div class="search-form">
+                    <!-- Поле ввода для реал-тайм фильтрации списка и маркеров -->
                     <input type="text" id="search-input" placeholder="Введите название или улицу АЗС...">
                 </div>
             </div>
 
+            <!-- Блок истории просмотров конкретных АЗС (скрыт до входа) -->
             <div id="history-box" class="history-container" style="display: none;">
                 <h3>История просмотров</h3>
+                <!-- Список для динамического вывода просмотренных АЗС из JS -->
                 <ul id="history-list"></ul>
+                <!-- Кнопка полной очистки истории в localStorage -->
                 <button id="clear-history-btn">Очистить историю</button>
             </div>
 
+            <!-- Контейнер сортировки и фильтрации данных -->
             <div class="filter-box">
                 <h3>Фильтровать АЗС</h3>
+                <!-- Сортировка по рейтингу -->
                 <div class="filter-group">
                     <label for="filter-rating-select">Рейтинг</label>
                     <select id="filter-rating-select" class="styled-select">
@@ -53,6 +73,7 @@
                         <option value="asc">От худшего к лучшему (★ 1 → 5)</option>
                     </select>
                 </div>
+                <!-- Сортировка по стоимости топлива (заблокирована для не-VIP) -->
                 <div class="filter-group">
                     <label for="filter-price-select">Цена топлива</label>
                     <select id="filter-price-select" class="styled-select">
@@ -62,54 +83,72 @@
                 </div>
             </div>
 
+            <!-- Целевой блок вывода карточек заправок Майкопа -->
             <h2>Список станций в Майкопе</h2>
+            <!-- Сюда JS-скрипт генерирует интерактивные карточки станций -->
             <div id="station-list"></div>
         </aside>
         
+        <!-- Контейнер инициализации интерактивной онлайн-карты Leaflet -->
         <section id="map"></section>
     </main>
 
+    <!-- ЭКРАН 2: Автономная страница Технической Поддержки -->
     <main class="main-container app-screen" id="screen-support" style="display: none;">
+        <!-- Центрирующий контейнер информационной страницы -->
         <div class="info-page-container">
+            <!-- Карточка с контентом поддержки -->
             <div class="info-card">
                 <h2>Служба поддержки пользователей</h2>
                 <p class="subtitle-text">Есть вопросы, предложения или нашли неточность? Мы всегда на связи!</p>
                 
+                <!-- Список доступных темы обращений -->
                 <div class="support-topics">
                     <div class="topic-item">📢 <span>Узнать информацию о рекламе и коммерческом сотрудничестве</span></div>
                     <div class="topic-item">💡 <span>Предложить новые идеи по развитию приложения</span></div>
                     <div class="topic-item">🐛 <span>Заявить об ошибке или сбое в гео-метках</span></div>
                 </div>
 
+                <!-- Блок прямых ссылок на контакты разработчика -->
                 <div class="contacts-block">
                     <h3>Прямые каналы связи:</h3>
+                    <!-- Ссылка на электронную почту -->
                     <a href="mailto:seyrin25@gmail.com" class="contact-link email-link">✉️ seyrin25@gmail.com</a>
+                    <!-- Ссылка на мессенджер Telegram -->
                     <a href="https://t.me/SeyRins" target="_blank" class="contact-link tg-link">✈️ t.me/SeyRins</a>
                 </div>
                 
+                <!-- Кнопка возврата к работе с онлайн-картой -->
                 <button class="btn-submit back-to-map-btn">« Вернуться к карте</button>
             </div>
         </div>
     </main>
 
+    <!-- ЭКРАН 3: Информационная страница встроенной Справки (База знаний) -->
     <main class="main-container app-screen" id="screen-help" style="display: none;">
+        <!-- Центрирующий контейнер страницы справки -->
         <div class="info-page-container">
+            <!-- Двухколоночный макет базы знаний -->
             <div class="help-layout">
+                <!-- Левая колонка: интерактивное меню выбора категорий справки -->
                 <aside class="help-menu">
                     <h3>Разделы справки</h3>
                     <ul class="help-menu-list">
-                        <li class="active-help-tab" data-target="help-about">О проекте FuelNavigator</li>
+                        <li class="active-help-tab" data-target="help-about">О проекте FuelHavigator</li>
                         <li class="data-target" data-target="help-vip">Преимущества VIP-статуса</li>
                         <li class="data-target" data-target="help-data">Обновление базы данных</li>
                     </ul>
                 </aside>
                 
+                <!-- Правая колонка: содержательная текстовая часть справки -->
                 <section class="help-content-box">
+                    <!-- Текст вкладки "О проекте" -->
                     <div id="help-about" class="help-tab-content">
-                        <h2>О проекте FuelNavigator</h2>
-                        <p><strong>FuelNavigator</strong> — это интерактивная картографическая система, разработанная для удобного мониторинга стоимости топлива и поиска оптимальных маршрутов к АЗС в городе Майкоп. Наш сервис позволяет сравнивать цены, оценивать рейтинги станций и строить персональные маршруты.</p>
+                        <h2>О проекте FuelHavigator</h2>
+                        <p><strong>FuelHavigator</strong> — это интерактивная картографическая система, разработанная для удобного мониторинга стоимости топлива и поиска оптимальных маршрутов к АЗС в городе Майкоп. Наш сервис позволяет сравнивать цены, оценивать рейтинги станций и строить персональные маршруты Project.</p>
                     </div>
 
+                    <!-- Текст вкладки "Преимущества VIP" -->
                     <div id="help-vip" class="help-tab-content" style="display: none;">
                         <h2>Преимущества VIP-статуса</h2>
                         <p>VIP-аккаунт переводит приложение в профессиональный режим эксплуатации:</p>
@@ -120,101 +159,138 @@
                         </ul>
                     </div>
 
+                    <!-- Текст вкладки "Обновление базы данных" -->
                     <div id="help-data" class="help-tab-content" style="display: none;">
                         <h2>Обновление базы данных</h2>
                         <p>Все изменения цен, добавление новых сетевых заправок и очистка кэш-данных производятся в реальном времени. Хранение индивидуальных сессий и списков поиска привязано к механизмам кэширования в пределах вашего локального веб-обозревателя.</p>
                     </div>
 
+                    <!-- Красный жирный дисклеймер учебного макета -->
                     <div class="warning-disclaimer">
                         ⚠️ Сайт используется исключительно как макет, не имеет достоверной информации, может содержать неточности и ошибки, требует дальнейших исправлений и доработок.
                     </div>
                     
+                    <!-- Кнопка быстрого возврата к онлайн-картой -->
                     <button class="btn-submit back-to-map-btn" style="margin-top: 20px;">« Вернуться к карте</button>
                 </section>
             </div>
         </div>
     </main>
 
+    <!-- Подвал сайта (Статический футер) -->
     <footer>
-        <p>&copy; 2026 FuelNavigator. <a href="#" id="footer-support-btn">Поддержка</a> | <a href="#" id="footer-help-btn">Справка</a></p>
+        <p>&copy; 2026 FuelHavigator. <a href="#" id="footer-support-btn">Поддержка</a> | <a href="#" id="footer-help-btn">Справка</a></p>
     </footer>
 
+    <!-- МОДАЛЬНОЕ ОКНО 1: Авторизация зарегистрированных аккаунтов (Вход) -->
     <div id="login-modal" class="modal-overlay">
+        <!-- Внутренний контейнер карточки входа -->
         <div class="modal-content">
+            <!-- Кнопка-крестик закрытия окна -->
             <span class="close-modal" id="close-login">&times;</span>
             <h2>Авторизация</h2>
+            <!-- Форма ввода данных авторизации -->
             <form class="auth-form" id="login-form">
                 <input type="email" id="login-email" placeholder="Ваш e-mail" required>
                 <input type="password" id="login-password" placeholder="Пароль" required>
                 <button type="submit" class="btn-submit">Войти</button>
             </form>
+            <!-- Блок переключения на окно Регистрации без закрытия оверлея -->
             <div class="toggle-auth-view">
                 <p>Нет аккаунта? <span id="go-to-register">Зарегистрироваться.</span></p>
             </div>
         </div>
     </div>
 
+    <!-- МОДАЛЬНОЕ ОКНО 2: Регистрация новых уникальных пользователей -->
     <div id="auth-modal" class="modal-overlay">
+        <!-- Внутренний контейнер карточки регистрации -->
         <div class="modal-content">
+            <!-- Кнопка-крестик закрытия окна -->
             <span class="close-modal" id="close-auth">&times;</span>
             <h2>Регистрация</h2>
+            <!-- Форма отправки данных регистрации со строгой HTML5-валидацией длины пароля -->
             <form class="auth-form" id="register-form">
                 <input type="text" id="reg-name" placeholder="Ваше имя" required>
                 <input type="email" id="reg-email" placeholder="Ваш e-mail" required>
                 <input type="password" id="reg-password" placeholder="Пароль (6-12 символов)" minlength="6" maxlength="12" required>
                 <button type="submit" class="btn-submit">Зарегистрироваться</button>
             </form>
+            <!-- Блок переключения на окно Авторизации -->
             <div class="toggle-auth-view">
                 <p>Уже есть аккаунт? <span id="go-to-login">Войти.</span></p>
             </div>
         </div>
     </div>
 
+    <!-- МОДАЛЬНОЕ ОКНО 3: Личный кабинет (Профиль авторизованного сеанса) -->
     <div id="profile-modal" class="modal-overlay">
+        <!-- Внутренний контейнер карточки личного кабинета -->
         <div class="modal-content text-center">
+            <!-- Кнопка-крестик закрытия окна -->
             <span class="close-modal" id="close-profile">&times;</span>
             <h2>Личный кабинет</h2>
+            <!-- Системный аватар -->
             <div class="profile-avatar">👤</div>
+            <!-- Поле вывода имени текущей активной сессии -->
             <h3 id="profile-user-name">Пользователь</h3>
+            <!-- Поле вывода текущего статуса (Обычный / VIP) -->
             <p style="color: #666;">Статус аккаунта: <span id="profile-status-text" style="font-weight:bold;">Обычный</span></p>
+            <!-- Кнопка ручного выхода (полностью очищает сессионный ключ в localStorage) -->
             <button id="logout-btn" class="btn-submit" style="background:#e53935; margin-top: 15px;">Выйти из аккаунта</button>
         </div>
     </div>
 
+    <!-- МОДАЛЬНОЕ ОКНО 4: Магазин VIP-привилегий -->
     <div id="shop-modal" class="modal-overlay">
+        <!-- Внутренний контейнер карточки магазина -->
         <div class="modal-content shop-content">
+            <!-- Кнопка-крестик закрытия окна -->
             <span class="close-modal" id="close-shop">&times;</span>
             <h2>Магазин привилегий</h2>
+            <!-- Описание карточки и преимуществ VIP-пакета -->
             <div class="vip-card-box">
                 <h3>Статус VIP-Пользователь</h3>
                 <p class="vip-desc">Открывает доступ к ценам на все виды топлива (АИ-95, АИ-92, ДТ) на карте Майкопа, активирует умные фильтры и полностью отключает всплывающую рекламу.</p>
+                <!-- Сетка цен со скидкой 100% -->
                 <div class="vip-price">0 ₽ <span class="old-price">499 ₽</span></div>
+                <!-- Кнопка бесплатной бессрочной активации пакета -->
                 <button id="buy-vip-btn" class="btn-submit vip-buy">Активировать бесплатно</button>
             </div>
         </div>
     </div>
 
+    <!-- МОДАЛЬНОЕ ОКНО 5: Нативный премиальный рекламный баннер со встроенным таймером КД -->
     <div id="ad-modal" class="modal-overlay ad-blur-overlay">
+        <!-- Карточка рекламного объявления (размытие заднего фона) -->
         <div class="premium-ad-card">
+            <!-- Шапка рекламной карточки -->
             <div class="premium-ad-header">
                 <span class="premium-ad-badge">Реклама</span>
+                <!-- Крестик закрытия (изначально скрыт JS-таймером на 3 секунды для защиты от случайных кликов) -->
                 <span class="close-modal-alt" id="close-ad" style="display: none;">&times;</span>
             </div>
+            <!-- Текстовое содержимое объявления -->
             <div class="premium-ad-body">
                 <h2>Здесь могла быть ваша реклама!</h2>
                 <p>Для уточнения информации обратитесь в поддержку.</p>
             </div>
+            <!-- Футер карточки с интерактивной управляющей кнопкой -->
             <div class="premium-ad-footer">
+                <!-- Кнопка закрытия. Изначально заблокирована (disabled) и ведет обратный отсчет от 3 до 0 -->
                 <button id="ad-close-btn" class="premium-ad-btn disabled-ad-btn" disabled>Скрыть через 3 сек...</button>
             </div>
         </div>
     </div>
 
+    <!-- Системный скрипт движка Leaflet API (подгружается ПЕРВЫМ) -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
+    <!-- ПЛАГИН МАРШРУТИЗАЦИИ: Строит треки по дорогам и считает время/дистанцию -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 
+    <!-- Файл основной исполняемой логики, регулярных выражений, баз данных и сессий приложения -->
     <script src="script.js"></script>
 </body>
 </html>

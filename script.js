@@ -3,7 +3,7 @@ let isUserVip = false;
 let isUserAuthorized = false;
 let authorizedName = "";
 let map = null; 
-let routingLine = null; // Переменная теперь хранит полноценный контроллер маршрутизации Leaflet Routing Machine
+let routingLine = null; 
 
 // Управление рекламой
 let stationsViewedCount = 0; 
@@ -13,9 +13,9 @@ let adTimerInterval = null;
 // Локальные базы данных в localStorage
 let vipUsersDatabase = JSON.parse(localStorage.getItem('fuelMapVipUsers')) || {}; 
 let historyDatabase = JSON.parse(localStorage.getItem('fuelMapUserHistories')) || {}; 
-let registeredAccounts = JSON.parse(localStorage.getItem('fuelMapAccounts')) || {}; // База данных аккаунтов
+let registeredAccounts = JSON.parse(localStorage.getItem('fuelMapAccounts')) || {}; 
 
-// ТОЧНАЯ ОБНОВЛЕННАЯ ГЕО-БАЗА СТАНЦИЙ МАЙКОПА (Данные из Яндекс/Google Карт)
+// ТОЧНАЯ ОБНОВЛЕННАЯ ГЕО-БАЗА СТАНЦИЙ МАЙКОПА
 const stations = [
     { id: 1, name: "Лукойл (ул. Хакурате, 194)", lat: 44.616857, lon: 40.115733, rating: 4.8, prices: { ai95: "56.40", ai92: "51.20", dt: "60.10" } },
     { id: 2, name: "Роснефть (ул. Привокзальная, 290)", lat: 44.625034, lon: 40.072727, rating: 4.5, prices: { ai95: "55.90", ai92: "50.80", dt: "59.50" } },
@@ -41,7 +41,17 @@ window.onload = function() {
     document.documentElement.style.setProperty('--vh', `${vh}px`);
 
     map = L.map('map', { zoomControl: true }).setView([44.615, 40.085], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+    
+    // Инициализируем карту БЕЗ флага в строке копирайта (атрибуции)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+        attribution: '© OpenStreetMap' 
+    }).addTo(map);
+
+    // Удаляем любые стили и ссылки на флаг из системного контейнера Leaflet во избежание багов
+    const attributionContainer = document.querySelector('.leaflet-control-attribution');
+    if(attributionContainer) {
+        attributionContainer.innerHTML = '© OpenStreetMap contributors';
+    }
 
     setTimeout(() => { map.invalidateSize(); }, 400);
 
@@ -163,50 +173,49 @@ function handleStationTracking(stationObj) {
     if (stationsViewedCount % 2 === 0 && timeSinceLastAd >= 30) { triggerAd(); }
 }
 
-// ПОЛНОЦЕННОЕ УМНОЕ ПОСТРОЕНИЕ МАРШРУТА ПО УЛИЦАМ МАЙКОПА ЧЕРЕЗ СЕРВЕР OSRM
+// УМНОЕ ПОСТРОЕНИЕ МАРШРУТА БЕЗ ОТОБРАЖЕНИЯ ФЛАГОВ И СТОРОННИХ ЭЛЕМЕНТОВ
 function buildRouteToStation(destLat, destLon) {
     if (!userLocationCoords) return;
     
-    // Если на карте уже отображается прошлый построенный маршрут — стираем его перед новым расчетом
     if (routingLine) {
         map.removeControl(routingLine);
     }
 
-    // Инициализируем контроллер построения маршрутов Leaflet Routing Machine
     routingLine = L.Routing.control({
         waypoints: [
-            L.latLng(userLocationCoords[0], userLocationCoords[1]), // Точка А (Где я?)
-            L.latLng(destLat, destLon)                              // Точка Б (Выбранная АЗС)
+            L.latLng(userLocationCoords[0], userLocationCoords[1]), 
+            L.latLng(destLat, destLon)                              
         ],
         router: L.Routing.osrmv1({
-            serviceUrl: 'https://router.project-osrm.org/route/v1' // Подключаем бесплатный сервер обработки дорожной сетки
+            serviceUrl: 'https://router.project-osrm.org/route/v1' 
         }),
         lineOptions: {
-            styles: [{ color: '#0284c7', opacity: 0.8, weight: 6 }] // Настройки линии дороги на карте
+            styles: [{ color: '#0284c7', opacity: 0.8, weight: 6 }] 
         },
-        createMarker: function() { return null; }, // Убираем стандартные черные метки плагина, чтобы не портить дизайн
-        addWaypoints: false, // Отключаем возможность кликами добавлять промежуточные точки
+        createMarker: function() { return null; }, 
+        addWaypoints: false, 
         routeWhileDragging: false,
-        show: false // Скрываем громоздкую боковую текстовую панель с шагами поворотов
+        show: false 
     }).addTo(map);
 
-    // Слушатель события: когда сервер прислал готовые расчеты дорожного трека
+    // Удаляем любые всплывающие ссылки или флаги, которые может заново инжектировать плагин
+    const routingAttribution = document.querySelector('.leaflet-control-attribution');
+    if(routingAttribution) {
+        routingAttribution.innerHTML = '© OpenStreetMap contributors';
+    }
+
     routingLine.on('routesfound', function(e) {
         const routes = e.routes;
-        const summary = routes[0].summary; // Забираем общую сводку расчетов
+        const summary = routes[0].summary; 
         
-        // Конвертируем метры в читаемые километры и секунды в минуты
         const distanceKm = (summary.totalDistance / 1000).toFixed(1);
         const timeMin = Math.round(summary.totalTime / 60);
 
-        // Находим HTML-блок активного всплывающего балуна (popup) на карте
         const activePopup = document.querySelector('.leaflet-popup-content');
         if (activePopup) {
-            // Удаляем старый инфо-блок, если строим маршрут повторно, чтобы избежать дублирования текста
             const existingInfo = document.querySelector('.route-summary-info');
             if (existingInfo) existingInfo.remove();
 
-            // Создаем красивый адаптивный плавающий блок с информацией о поездке
             const infoDiv = document.createElement('div');
             infoDiv.className = 'route-summary-info';
             infoDiv.style.marginTop = '10px';
@@ -218,19 +227,17 @@ function buildRouteToStation(destLat, destLon) {
             infoDiv.style.color = '#334155';
             infoDiv.innerHTML = `🚗 <b>Расстояние по дорогам:</b> ${distanceKm} км<br>⏱️ <b>Время в пути:</b> ${timeMin} мин`;
             
-            // Встраиваем данные прямо внутрь балуна над кнопкой
             activePopup.appendChild(infoDiv);
         }
     });
 }
 
-// Функции управления выдвижным TG-меню
 function closeSidebarDrawer() {
     const sidebar = document.getElementById('app-sidebar');
     const toggleBtn = document.getElementById('toggle-sidebar-btn');
     sidebar.classList.remove('drawer-open');
     toggleBtn.classList.remove('control-shifted');
-    toggleBtn.innerText = "☰ Мения АЗС";
+    toggleBtn.innerText = "☰ Меню АЗС";
 }
 
 function openSidebarDrawer() {
@@ -388,7 +395,7 @@ function initApplicationEvents() {
         alert(`🔓 Авторизация успешна! С возвращением, ${authorizedName}.`);
     });
 
-    // Регистрация аккаунтов с проверкой на дубликаты имен и почт
+    // Регистрация
     document.getElementById('register-form').addEventListener('submit', (e) => { 
         e.preventDefault(); 
         const name = document.getElementById('reg-name').value.trim();
